@@ -64,6 +64,7 @@ console.log(
           const executionTime = Number(
             ((Date.now() - startTime) / 1000).toFixed(2)
           );
+          
           console.log(stdout);
     console.log(stderr);
 
