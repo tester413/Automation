@@ -54,7 +54,7 @@ console.log(
 );
 
     exec(
-      "npx playwright test tests/news.spec.js"
+      "npx playwright test tests/news.spec.js",
       {
        cwd: PLAYWRIGHT_ROOT,
       },
