@@ -18,7 +18,7 @@ class JsonReporter {
             a => a.type === "metadata"
         );
 
-        if (annotation) {
+        if (annotation) { 
             try {
                 metadata = JSON.parse(annotation.description);
             } catch (err) {

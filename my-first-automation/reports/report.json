@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-07-07T05:18:46.111Z",
+  "generatedAt": "2026-07-06T09:27:24.449Z",
   "summary": {
     "total": 1,
     "passed": 1,
     "failed": 0,
     "skipped": 0,
-    "totalDuration": 10776
+    "totalDuration": 23847
   },
   "tests": [
     {
-      "id": "Profile Update Flow - Pass Only On Success Message",
+      "id": "Profile Update Flow - Pass Only On Success Message", 
       "module": "General",
       "title": "Profile Update Flow - Pass Only On Success Message",
       "description": "",
@@ -17,9 +17,9 @@
       "actualResult": "",
       "browser": "",
       "status": "passed",
-      "date": "7/7/2026",
-      "time": "10:48:45 am",
-      "duration": 10776,
+      "date": "6/7/2026",
+      "time": "2:57:21 pm",
+      "duration": 23847,
       "file": "profile.spec.js",
       "line": 32,
       "column": 1,
