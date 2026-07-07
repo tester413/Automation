@@ -54,15 +54,18 @@ console.log(
 );
 
     exec(
-      "./node_modules/.bin/playwright test tests/news.spec.js",
+        "./node_modules/.bin/playwright test tests/news.spec.js --reporter=line",
       {
        cwd: PLAYWRIGHT_ROOT,
+       maxBuffer: 1024 * 1024 * 20,
       },
       async (error, stdout, stderr) => {
         try {
           const executionTime = Number(
             ((Date.now() - startTime) / 1000).toFixed(2)
           );
+          console.log(stdout);
+    console.log(stderr);
 
           const screenshotsJson = path.join(
             PLAYWRIGHT_ROOT,

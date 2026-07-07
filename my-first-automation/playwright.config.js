@@ -17,15 +17,17 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
 
   // Reporter
-  reporter: [['html'],
-['./reporters/JsonReporter.js']],
+ reporter: [
+  ['line'],
+  ['./reporters/JsonReporter.js']
+],
 
   // Global timeout
   timeout: 120000,
 
   use: {
     // Run browser visibly
-    headless: false,
+    headless: true,
 
     // Capture screenshots on failure
     screenshot: 'only-on-failure',
