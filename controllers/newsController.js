@@ -94,6 +94,9 @@ console.log(
 
           const savedResult = await TestResult.create(resultData);
 
+           console.log("ERROR:", error);
+console.log("STDOUT:", stdout);
+console.log("STDERR:", stderr);
           if (error) {
             return res.status(500).json({
               success: false,
