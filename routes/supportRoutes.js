@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const supportController = require('../Controllers/supportController');
+const supportController = require('../controllers/supportController');
 
 console.log("Support Controller:", supportController);
 
