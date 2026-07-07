@@ -8,6 +8,9 @@ const BASE_URL =
 
 const PROJECT_ROOT = process.cwd();
 
+// Playwright project location
+const PLAYWRIGHT_ROOT = path.join(PROJECT_ROOT, "my-first-automation");
+
 const runNewsTest = async (req, res) => {
   try {
     console.log("BODY RECEIVED:", req.body);
@@ -23,7 +26,7 @@ const runNewsTest = async (req, res) => {
 
     // ================= SAVE TEST DATA =================
 
-    const dataDir = path.join(PROJECT_ROOT, "test-data");
+   const dataDir = path.join(PLAYWRIGHT_ROOT, "test-data");
 
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
@@ -40,10 +43,20 @@ const runNewsTest = async (req, res) => {
 
     const startTime = Date.now();
 
+    console.log("PLAYWRIGHT_ROOT:", PLAYWRIGHT_ROOT);
+console.log(
+  "Config exists:",
+  fs.existsSync(path.join(PLAYWRIGHT_ROOT, "playwright.config.js"))
+);
+console.log(
+  "News test exists:",
+  fs.existsSync(path.join(PLAYWRIGHT_ROOT, "tests", "news.spec.js"))
+);
+
     exec(
-      "npx playwright test tests/news.spec.js --project=chromium",
+      "npx playwright test tests/news.spec.js"
       {
-        cwd: PROJECT_ROOT,
+       cwd: PLAYWRIGHT_ROOT,
       },
       async (error, stdout, stderr) => {
         try {
@@ -52,7 +65,7 @@ const runNewsTest = async (req, res) => {
           );
 
           const screenshotsJson = path.join(
-            PROJECT_ROOT,
+            PLAYWRIGHT_ROOT,
             "screenshots",
             "screenshots.json"
           );
