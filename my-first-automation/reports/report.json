@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-07-06T09:27:24.449Z",
+  "generatedAt": "2026-07-07T09:43:39.463Z",
   "summary": {
     "total": 1,
     "passed": 1,
     "failed": 0,
     "skipped": 0,
-    "totalDuration": 23847
+    "totalDuration": 18085
   },
   "tests": [
     {
-      "id": "Profile Update Flow - Pass Only On Success Message", 
+      "id": "Newsletter Subscription",
       "module": "General",
-      "title": "Profile Update Flow - Pass Only On Success Message",
+      "title": "Newsletter Subscription",
       "description": "",
       "expectedResult": "",
       "actualResult": "",
       "browser": "",
       "status": "passed",
-      "date": "6/7/2026",
-      "time": "2:57:21 pm",
-      "duration": 23847,
-      "file": "profile.spec.js",
-      "line": 32,
+      "date": "7/7/2026",
+      "time": "3:13:39 pm",
+      "duration": 18085,
+      "file": "news.spec.js",
+      "line": 18,
       "column": 1,
       "error": null
     }

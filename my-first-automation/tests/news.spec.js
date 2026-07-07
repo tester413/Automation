@@ -4,6 +4,13 @@ const fs = require("fs");
 const path = require("path");
 const screenshots = [];
 
+console.log(
+  "AUTH FILE EXISTS:",
+  fs.existsSync(
+    path.join(process.cwd(),"auth","auth.json")
+  )
+);
+
 test.use({
   storageState: "auth/auth.json",
 });

@@ -33,8 +33,10 @@ app.use((req, res, next) => {
 // =====================
 // SCREENSHOT SERVING
 // =====================
-const screenshotsPath = path.resolve(
-    "C:/Users/CPuser/CCC/my-first-automation/screenshots"
+const screenshotsPath = path.join(
+    process.cwd(),
+    "my-first-automation",
+    "screenshots"
 );
 
 console.log("📸 Serving screenshots from:");

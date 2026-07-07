@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 const BASE_URL =
-  process.env.BASE_URL || "http://localhost:5000";
+  process.env.BASE_URL || "https://automation-backend-r22h.onrender.com";
 
 const PROJECT_ROOT = process.cwd();
 
@@ -64,7 +64,7 @@ console.log(
           const executionTime = Number(
             ((Date.now() - startTime) / 1000).toFixed(2)
           );
-          
+
           console.log(stdout);
     console.log(stderr);
 
