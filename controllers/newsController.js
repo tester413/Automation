@@ -3,6 +3,10 @@ const TestResult = require("../models/TestResult");
 const fs = require("fs");
 const path = require("path");
 
+const BASE_URL =
+  process.env.BASE_URL || "http://localhost:5000";
+
+const PROJECT_ROOT = process.cwd();
 
 const runNewsTest = async (req, res) => {
   try {
@@ -19,67 +23,63 @@ const runNewsTest = async (req, res) => {
 
     // ================= SAVE TEST DATA =================
 
-    const dataFilePath = path.join(
-      "C:/Users/CPuser/CCC/my-first-automation",
-      "test-data",
-      "newsData.json"
-    );
+    const dataDir = path.join(PROJECT_ROOT, "test-data");
+
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+
+    const dataFilePath = path.join(dataDir, "newsData.json");
 
     fs.writeFileSync(
       dataFilePath,
       JSON.stringify({ email }, null, 2)
     );
 
-    console.log("NEWS DATA SAVED");
+    console.log("NEWS DATA SAVED:", dataFilePath);
 
     const startTime = Date.now();
 
     exec(
       "npx playwright test tests/news.spec.js --project=chromium",
       {
-        cwd: "C:/Users/CPuser/CCC/my-first-automation",
+        cwd: PROJECT_ROOT,
       },
       async (error, stdout, stderr) => {
         try {
           const executionTime = Number(
             ((Date.now() - startTime) / 1000).toFixed(2)
           );
-const screenshotsJson = path.join(
-    "C:/Users/CPuser/CCC/my-first-automation",
-    "screenshots",
-    "screenshots.json"
-);
 
-let screenshots = [];
+          const screenshotsJson = path.join(
+            PROJECT_ROOT,
+            "screenshots",
+            "screenshots.json"
+          );
 
-if (fs.existsSync(screenshotsJson)) {
+          let screenshots = [];
 
-    const files = JSON.parse(
-        fs.readFileSync(screenshotsJson, "utf8")
-    );
+          if (fs.existsSync(screenshotsJson)) {
+            const files = JSON.parse(
+              fs.readFileSync(screenshotsJson, "utf8")
+            );
 
-    screenshots = files.map(file =>
-        `http://localhost:5000/screenshots/${encodeURIComponent(file)}`
-    );
-}
+            screenshots = files.map(file =>
+              `${BASE_URL}/screenshots/${encodeURIComponent(file)}`
+            );
+          }
 
-          console.log("SCREENSHOT URL:", screenshots);
-
-         const resultData = {
-  testName: "Newsletter Test",
-  status: error ? "FAILED" : "PASSED",
-  output: error ? (stderr || stdout || error.message) : stdout,
-  executionTime,
-  screenshots,
-};
-
-          console.log("DATA TO SAVE:");
-          console.log(resultData);
+          const resultData = {
+            testName: "Newsletter Test",
+            status: error ? "FAILED" : "PASSED",
+            output: error
+              ? (stderr || stdout || error.message)
+              : stdout,
+            executionTime,
+            screenshots,
+          };
 
           const savedResult = await TestResult.create(resultData);
-
-          console.log("SAVED RESULT:");
-          console.log(savedResult);
 
           if (error) {
             return res.status(500).json({
