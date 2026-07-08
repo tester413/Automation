@@ -80,7 +80,7 @@ const runSearchTest = async (req, res) => {
     console.log("PLAYWRIGHT_ROOT:", PLAYWRIGHT_ROOT);
 console.log("PLAYWRIGHT_BROWSERS_PATH:", process.env.PLAYWRIGHT_BROWSERS_PATH);
 
-   exec(
+ exec(
   PLAYWRIGHT_COMMAND,
   {
     cwd: PLAYWRIGHT_ROOT,
@@ -91,7 +91,25 @@ console.log("PLAYWRIGHT_BROWSERS_PATH:", process.env.PLAYWRIGHT_BROWSERS_PATH);
     },
   },
   async (error, stdout, stderr) => {
-    // your existing code
+    try {
+      const executionTime = Number(
+        ((Date.now() - startTime) / 1000).toFixed(2)
+      );
+
+      // ⭐ Keep ALL the rest of your existing code here
+      // Read screenshots
+      // Read report
+      // Save TestResult
+      // Return response
+
+    } catch (dbError) {
+      console.error(dbError);
+
+      return res.status(500).json({
+        success: false,
+        message: dbError.message,
+      });
+    }
   }
 );
   
