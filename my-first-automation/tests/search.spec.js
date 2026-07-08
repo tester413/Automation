@@ -61,34 +61,37 @@ test(
     // Open Website
     // =====================================
 
-    const start = Date.now();
+    // =====================================
+// TC001 - Open Website
+// =====================================
 
-    await page.goto("https://crowcrowcrow.com/", {
-      waitUntil: "load",
-      timeout: 120000,
-    });
+console.log("Opening Website...");
 
-    // Let page finish rendering
-    await page.waitForTimeout(5000);
+const startTime = Date.now();
 
-    console.log("TITLE:", await page.title());
-    console.log("URL:", page.url());
+await page.goto("https://crowcrowcrow.com/", {
+  waitUntil: "domcontentloaded",
+  timeout: 120000,
+});
 
-    console.log(
-      "Homepage Load:",
-      Date.now() - start,
-      "ms"
-    );
+await page.waitForLoadState("networkidle");
 
-    addStep(
-      "TC001",
-      "Homepage Loaded",
-      "Open homepage",
-      "Homepage should load",
-      "Homepage loaded successfully",
-      "passed"
-    );
+const loadTime = Date.now() - startTime;
 
+console.log(`🏠 Homepage Load Time: ${loadTime} ms`);
+console.log("TITLE:", await page.title());
+console.log("URL:", page.url());
+
+await expect(page).toHaveURL("https://crowcrowcrow.com/");
+
+addStep(
+  "TC001",
+  "Open Website",
+  "Navigate to https://crowcrowcrow.com/",
+  "Website should open successfully",
+  `Website opened successfully in ${loadTime} ms`,
+  "passed"
+);
     // =====================================
     // Debug Inputs
     // =====================================
