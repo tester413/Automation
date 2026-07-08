@@ -137,13 +137,9 @@ console.log("Filling search text...");
 
 console.log("Before fill");
 
-await searchBox.click();
-
-await searchBox.press("Control+A");
-
-await searchBox.press("Backspace");
-
-await searchBox.pressSequentially(searchData.searchText);
+await searchBox.fill(searchData.searchText, {
+  timeout: 10000,
+});
 
 console.log("After fill");
 
