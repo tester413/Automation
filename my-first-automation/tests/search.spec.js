@@ -87,10 +87,12 @@ test(
         const searchBox = page.locator(
             "input[placeholder='Search USA products...']"
         );
+         console.log("Waiting for search box...");
 
         await expect(searchBox).toBeVisible({
             timeout: 30000
         });
+       console.log("Search box found");
 
         addStep(
             "TC002",
@@ -102,6 +104,7 @@ test(
         );
 
         await searchBox.fill(searchData.searchText);
+        console.log("Text entered");
 
         addStep(
             "TC003",
@@ -115,7 +118,7 @@ test(
         // =========================
         // Search Button
         // =========================
-
+console.log("Waiting for button");
         const searchButton = page.locator(
             "button[aria-label='Search'][type='submit']"
         );
