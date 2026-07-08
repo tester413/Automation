@@ -35,10 +35,7 @@ const runSearchTest = async (req, res) => {
       });
     }
 
-    // =====================================
     // Create test-data folder
-    // =====================================
-
     const testDataDir = path.join(
       PLAYWRIGHT_ROOT,
       "test-data"
@@ -50,10 +47,7 @@ const runSearchTest = async (req, res) => {
       });
     }
 
-    // =====================================
-    // Save JSON
-    // =====================================
-
+    // Save search text
     const dataFile = path.join(
       testDataDir,
       "searchData.json"
@@ -83,46 +77,31 @@ const runSearchTest = async (req, res) => {
     console.log("Starting Playwright...");
     console.log("Command:", PLAYWRIGHT_COMMAND);
 
-const child = exec(
-  PLAYWRIGHT_COMMAND,
-  {
-    cwd: PLAYWRIGHT_ROOT,
-    maxBuffer: 1024 * 1024 * 20,
-    env: {
-      ...process.env,
-      PLAYWRIGHT_BROWSERS_PATH: "0",
-    },
-  },
-  async (error, stdout, stderr) => {
-    console.log("Playwright callback reached");
+    const child = exec(
+      PLAYWRIGHT_COMMAND,
+      {
+        cwd: PLAYWRIGHT_ROOT,
+        maxBuffer: 1024 * 1024 * 20,
+        env: {
+          ...process.env,
+          PLAYWRIGHT_BROWSERS_PATH: "0",
+        },
+      },
+      async (error, stdout, stderr) => {
+        console.log("Playwright callback reached");
 
-    console.log("ERROR:", error);
-    console.log("STDOUT:", stdout);
-    console.log("STDERR:", stderr);
+        try {
+          const executionTime = Number(
+            ((Date.now() - startTime) / 1000).toFixed(2)
+          );
 
-    // existing code...
-  }
-);
+          console.log("ERROR:", error);
+          console.log("STDOUT:", stdout);
+          console.log("STDERR:", stderr);
 
-child.stdout.on("data", data => {
-  console.log("[PW]", data.toString());
-});
-
-child.stderr.on("data", data => {
-  console.error("[PW ERROR]", data.toString());
-});
-
-child.on("close", code => {
-  console.log("Playwright exited with code:", code);
-});
-
-child.on("error", err => {
-  console.log("Spawn Error:", err);
-});
-
-          // =====================================
+          // ==========================
           // Read Screenshots
-          // =====================================
+          // ==========================
 
           const screenshotsFile = path.join(
             PLAYWRIGHT_ROOT,
@@ -143,9 +122,9 @@ child.on("error", err => {
             );
           }
 
-          // =====================================
+          // ==========================
           // Read Report
-          // =====================================
+          // ==========================
 
           let report = null;
 
@@ -161,9 +140,9 @@ child.on("error", err => {
             );
           }
 
-          // =====================================
+          // ==========================
           // Save Result
-          // =====================================
+          // ==========================
 
           const result = await TestResult.create({
             testName: "Search Test",
@@ -175,10 +154,6 @@ child.on("error", err => {
             screenshots,
             report,
           });
-
-          // =====================================
-          // Response
-          // =====================================
 
           if (error) {
             return res.status(500).json({
@@ -204,7 +179,7 @@ child.on("error", err => {
           });
 
         } catch (dbError) {
-          console.error(dbError);
+          console.error("DB ERROR:", dbError);
 
           return res.status(500).json({
             success: false,
@@ -213,6 +188,23 @@ child.on("error", err => {
         }
       }
     );
+
+    // Live logs
+    child.stdout.on("data", (data) => {
+      console.log("[PW]", data.toString());
+    });
+
+    child.stderr.on("data", (data) => {
+      console.error("[PW ERROR]", data.toString());
+    });
+
+    child.on("close", (code) => {
+      console.log("Playwright exited with code:", code);
+    });
+
+    child.on("error", (err) => {
+      console.error("Spawn Error:", err);
+    });
 
   } catch (error) {
     console.error(error);
