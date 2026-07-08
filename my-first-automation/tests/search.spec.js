@@ -122,6 +122,33 @@ await expect(searchBox).toBeVisible({
 
 console.log("Search box found");
 
+// Scroll like a real user
+await page.mouse.wheel(0, 500);
+await page.waitForTimeout(1000);
+
+await page.mouse.wheel(0, -500);
+await page.waitForTimeout(1000);
+
+console.log("Visible:", await searchBox.isVisible());
+console.log("Enabled:", await searchBox.isEnabled());
+console.log("Editable:", await searchBox.isEditable());
+console.log("Bounding Box:", await searchBox.boundingBox());
+
+console.log("Clicking search box...");
+
+await searchBox.click({
+  force: true,
+});
+
+console.log("Typing search text...");
+
+await page.keyboard.press("Control+A");
+await page.keyboard.press("Backspace");
+
+await page.keyboard.type(searchData.searchText);
+
+console.log("Search text entered:", searchData.searchText);
+
 // Wait for page to settle
 await page.waitForTimeout(3000);
 
@@ -172,9 +199,21 @@ addStep(
 
     const searchStart = Date.now();
 
-    await searchButton.click({
-      force: true,
-    });
+   console.log("Clicking search button...");
+
+   await page.screenshot({
+  path: "before-search.png",
+  fullPage: true,
+});
+
+console.log("Screenshot captured");
+
+await searchButton.click({
+  force: true,
+  timeout: 30000,
+});
+
+console.log("Search button clicked");
 
     // =====================================
     // Wait Search Result
