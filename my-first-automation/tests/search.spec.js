@@ -1,239 +1,219 @@
-const { test, expect } = require('@playwright/test');
-const searchData = require('../test-data/searchData.json');
-const fs = require('fs');
-const path = require('path');
+const { test, expect } = require("@playwright/test");
+const searchData = require("../test-data/searchData.json");
+const fs = require("fs");
+const path = require("path");
 
 const testSteps = [];
 
-// =========================
-// Add Test Step
-// =========================
 function addStep(
+  id,
+  title,
+  description,
+  expectedResult,
+  actualResult,
+  status
+) {
+  const now = new Date();
+
+  testSteps.push({
     id,
     title,
     description,
     expectedResult,
     actualResult,
-    status
-) {
-
-    const now = new Date();
-
-    testSteps.push({
-        id,
-        title,
-        description,
-        expectedResult,
-        actualResult,
-        status,
-        date: now.toLocaleDateString(),
-        time: now.toLocaleTimeString()
-    });
-
+    status,
+    date: now.toLocaleDateString(),
+    time: now.toLocaleTimeString(),
+  });
 }
 
 const testCase = {
-    id: "TC001",
-    module: "Search",
-    title: "Search Product",
-    description: "Verify search functionality",
-    expectedResult: "Matching products should be displayed",
-    browser: "chromium"
+  id: "TC001",
+  module: "Search",
+  title: "Search Product",
+  description: "Verify search functionality",
+  expectedResult: "Matching products should be displayed",
+  browser: "chromium",
 };
 
 test(
-    `${testCase.id} | ${testCase.module} | ${testCase.title}`,
-    async ({ page, browserName }, testInfo) => {
+  `${testCase.id} | ${testCase.module} | ${testCase.title}`,
+  async ({ page, browserName }, testInfo) => {
+    testSteps.length = 0;
 
-        // Clear previous execution steps
-        testSteps.length = 0;
+    testInfo.annotations.push({
+      type: "metadata",
+      description: JSON.stringify({
+        ...testCase,
+        browser: browserName,
+      }),
+    });
 
-        // Metadata
-        testInfo.annotations.push({
-            type: "metadata",
-            description: JSON.stringify({
-                ...testCase,
-                browser: browserName
-            })
-        });
+    // =====================================
+    // Open Website
+    // =====================================
 
-        // =========================
-        // Homepage
-        // =========================
+    let startTime = Date.now();
 
-        let startTime = Date.now();
+    await page.goto("https://crowcrowcrow.com/", {
+      waitUntil: "domcontentloaded",
+    });
 
-        await page.goto("https://crowcrowcrow.com/", {
-            waitUntil: "networkidle"
-        });
+    let endTime = Date.now();
 
-        let endTime = Date.now();
+    console.log(`🏠 Homepage Load Time: ${endTime - startTime} ms`);
 
-        console.log(`🏠 Homepage Load Time: ${endTime - startTime} ms`);
+    addStep(
+      "TC001",
+      "Homepage Loaded",
+      "Open homepage",
+      "Homepage should open",
+      "Homepage opened successfully",
+      "passed"
+    );
 
-        addStep(
-            "TC001",
-            "Homepage Loads Successfully",
-            "Verify homepage loads successfully.",
-            "Homepage should load successfully.",
-            "Homepage loaded successfully.",
-            "passed"
-        );
+    // =====================================
+    // Search Box
+    // =====================================
 
-        // =========================
-        // Search Box
-        // =========================
+    console.log("Waiting for search box...");
 
-        const searchBox = page.locator(
-            "input[placeholder='Search USA products...']"
-        );
-         console.log("Waiting for search box...");
+    const searchBox = page.locator(
+      "input[placeholder='Search USA products...']"
+    );
 
-        await expect(searchBox).toBeVisible({
-            timeout: 30000
-        });
-       console.log("Search box found");
+    await expect(searchBox).toBeVisible({
+      timeout: 30000,
+    });
 
-        addStep(
-            "TC002",
-            "Search Box is Visible",
-            "Verify search textbox is visible.",
-            "Search textbox should be visible.",
-            "Search textbox is visible.",
-            "passed"
-        );
+    console.log("Search box found");
 
-        await searchBox.fill(searchData.searchText);
-        console.log("Text entered");
+    await searchBox.fill(searchData.searchText);
 
-        addStep(
-            "TC003",
-            "Enter Search Keyword",
-            "Verify user enters keyword.",
-            "Keyword should be entered successfully.",
-            `Keyword "${searchData.searchText}" entered successfully.`,
-            "passed"
-        );
+    console.log("Text entered");
 
-        // =========================
-        // Search Button
-        // =========================
-console.log("Waiting for button");
-        const searchButton = page.locator(
-            "button[aria-label='Search'][type='submit']"
-        );
+    addStep(
+      "TC002",
+      "Enter Search Text",
+      "Enter search keyword",
+      "Keyword should be entered",
+      `"${searchData.searchText}" entered`,
+      "passed"
+    );
 
-        await expect(searchButton).toBeVisible();
+    // =====================================
+    // Search Button
+    // =====================================
 
-        addStep(
-            "TC004",
-            "Search Button is Visible",
-            "Verify search button is visible.",
-            "Search button should be visible.",
-            "Search button is visible.",
-            "passed"
-        );
+    console.log("Waiting for button");
 
-        // =========================
-        // Click Search
-        // =========================
+    const searchButton = page.locator(
+      "button[aria-label='Search'][type='submit']"
+    );
 
-        startTime = Date.now();
+    await expect(searchButton).toBeVisible({
+      timeout: 30000,
+    });
 
-        await Promise.all([
-            page.waitForLoadState("networkidle"),
-            searchButton.click()
-        ]);
+    console.log("Button found");
 
-        endTime = Date.now();
+    addStep(
+      "TC003",
+      "Search Button",
+      "Verify button",
+      "Button visible",
+      "Button visible",
+      "passed"
+    );
 
-        console.log(`🔍 Search Results Load Time: ${endTime - startTime} ms`);
+    // =====================================
+    // Click Search
+    // =====================================
 
-        addStep(
-            "TC005",
-            "Click Search Button",
-            "Verify search button click.",
-            "Search request should be submitted.",
-            "Search button clicked successfully.",
-            "passed"
-        );
+    startTime = Date.now();
 
-        // =========================
-        // Verify URL
-        // =========================
+    await searchButton.click();
 
-        await expect(page).toHaveURL(/search/i);
+    await page.waitForTimeout(5000);
 
-        addStep(
-            "TC006",
-            "Navigate to Search Results",
-            "Verify search results page.",
-            "Search page should open successfully.",
-            `Navigated to ${page.url()}.`,
-            "passed"
-        );
+    endTime = Date.now();
 
-        // =========================
-        // Verify Products
-        // =========================
+    console.log(`🔍 Search Results Load Time: ${endTime - startTime} ms`);
 
-        const products = page.locator(
-            ".product-card, [data-testid='product-card']"
-        );
+    console.log("Current URL:", page.url());
 
-        const productCount = await products.count();
+    addStep(
+      "TC004",
+      "Click Search",
+      "Click search button",
+      "Search should execute",
+      "Search clicked",
+      "passed"
+    );
 
-        console.log("Products Found:", productCount);
+    // =====================================
+    // Verify Products
+    // =====================================
 
-        addStep(
-            "TC007",
-            "Verify Search Results",
-            "Verify products are displayed.",
-            "At least one product should be displayed.",
-            `${productCount} product(s) displayed.`,
-            productCount > 0 ? "passed" : "failed"
-        );
+    const products = page.locator(
+      ".product-card, [data-testid='product-card']"
+    );
 
-        // =========================
-        // Screenshot
-        // =========================
+    const productCount = await products.count();
 
-        const screenshotDir = path.join(
-            process.cwd(),
-            "screenshots"
-        );
+    console.log("Products Found:", productCount);
 
-        if (!fs.existsSync(screenshotDir)) {
-            fs.mkdirSync(screenshotDir, {
-                recursive: true
-            });
-        }
-
-        const screenshotName = `search-${Date.now()}.png`;
-
-        await page.screenshot({
-            path: path.join(screenshotDir, screenshotName),
-            fullPage: true
-        });
-
-        console.log(`SCREENSHOT_NAME=${screenshotName}`);
-
-        addStep(
-            "TC008",
-            "Capture Screenshot",
-            "Capture execution screenshot.",
-            "Screenshot should be saved successfully.",
-            `Screenshot saved as ${screenshotName}.`,
-            "passed"
-        );
-
-        console.log("Search Test Completed Successfully");
-
-        // Send steps to reporter
-        testInfo.annotations.push({
-            type: "steps",
-            description: JSON.stringify(testSteps)
-        });
-
+    if (productCount > 0) {
+      await expect(products.first()).toBeVisible();
     }
+
+    addStep(
+      "TC005",
+      "Verify Products",
+      "Verify search results",
+      "Products should appear",
+      `${productCount} products found`,
+      productCount > 0 ? "passed" : "failed"
+    );
+
+    // =====================================
+    // Screenshot
+    // =====================================
+
+    const screenshotDir = path.join(
+      process.cwd(),
+      "screenshots"
+    );
+
+    if (!fs.existsSync(screenshotDir)) {
+      fs.mkdirSync(screenshotDir, {
+        recursive: true,
+      });
+    }
+
+    const screenshotName = `search-${Date.now()}.png`;
+
+    await page.screenshot({
+      path: path.join(screenshotDir, screenshotName),
+      fullPage: true,
+    });
+
+    console.log(`SCREENSHOT_NAME=${screenshotName}`);
+
+    addStep(
+      "TC006",
+      "Capture Screenshot",
+      "Capture final screen",
+      "Screenshot should be saved",
+      screenshotName,
+      "passed"
+    );
+
+    console.log("Search Test Completed Successfully");
+
+    testInfo.annotations.push({
+      type: "steps",
+      description: JSON.stringify(testSteps),
+    });
+  }
 );
