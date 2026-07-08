@@ -142,6 +142,15 @@ timeout:60000
 }
 );
 
+console.log("TITLE:", await page.title());
+console.log("URL:", page.url());
+
+await page.screenshot({
+  path: path.join(process.cwd(), "screenshots", "render-home.png"),
+  fullPage: true,
+});
+
+console.log("Homepage Screenshot Saved");
 
 
 let endTime = Date.now();
@@ -182,7 +191,14 @@ console.log(
 );
 
 
+const acceptButton = page.getByRole("button", {
+  name: /accept|agree|allow/i,
+});
 
+if (await acceptButton.isVisible().catch(() => false)) {
+  console.log("Cookie banner found");
+  await acceptButton.click();
+}
 const searchBox =
 page.locator(
 "input[placeholder='Search USA products...']"
@@ -211,13 +227,22 @@ console.log("Clearing search box...");
 await searchBox.clear();
 
 console.log("Filling search box...");
-await searchBox.click();
+console.log("Waiting until search box is editable...");
 
-await searchBox.fill("");
-
-await searchBox.type(searchData.searchText, {
-  delay: 120,
+await expect(searchBox).toBeEditable({
+  timeout: 60000,
 });
+
+console.log("Scrolling search box into view...");
+
+await searchBox.scrollIntoViewIfNeeded();
+
+console.log("Filling search box directly...");
+
+// No click required
+await searchBox.fill(searchData.searchText);
+
+console.log("Search text entered:", await searchBox.inputValue());
 
 await expect(searchBox).toHaveValue(searchData.searchText);
 
