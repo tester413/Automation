@@ -16,9 +16,7 @@ const PLAYWRIGHT_ROOT = path.join(
 );
 
 const PLAYWRIGHT_COMMAND =
-  process.platform === "win32"
-    ? "npx playwright test tests/search.spec.js --project=chromium"
-    : "npx playwright test tests/search.spec.js --project=chromium";
+  "npx playwright test tests/search.spec.js --project=chromium";
 
 // =====================================
 // Run Search Test
@@ -72,47 +70,26 @@ const runSearchTest = async (req, res) => {
       )
     );
 
-    console.log("Search Data Saved:");
-    console.log(dataFile);
+    console.log("Search Data Saved:", dataFile);
 
     const startTime = Date.now();
 
     console.log("PLAYWRIGHT_ROOT:", PLAYWRIGHT_ROOT);
-console.log("PLAYWRIGHT_BROWSERS_PATH:", process.env.PLAYWRIGHT_BROWSERS_PATH);
+    console.log(
+      "PLAYWRIGHT_BROWSERS_PATH:",
+      process.env.PLAYWRIGHT_BROWSERS_PATH
+    );
 
- exec(
-  PLAYWRIGHT_COMMAND,
-  {
-    cwd: PLAYWRIGHT_ROOT,
-    maxBuffer: 1024 * 1024 * 20,
-    env: {
-      ...process.env,
-      PLAYWRIGHT_BROWSERS_PATH: "0",
-    },
-  },
-  async (error, stdout, stderr) => {
-    try {
-      const executionTime = Number(
-        ((Date.now() - startTime) / 1000).toFixed(2)
-      );
-
-      // ⭐ Keep ALL the rest of your existing code here
-      // Read screenshots
-      // Read report
-      // Save TestResult
-      // Return response
-
-    } catch (dbError) {
-      console.error(dbError);
-
-      return res.status(500).json({
-        success: false,
-        message: dbError.message,
-      });
-    }
-  }
-);
-  
+    exec(
+      PLAYWRIGHT_COMMAND,
+      {
+        cwd: PLAYWRIGHT_ROOT,
+        maxBuffer: 1024 * 1024 * 20,
+        env: {
+          ...process.env,
+          PLAYWRIGHT_BROWSERS_PATH: "0",
+        },
+      },
       async (error, stdout, stderr) => {
         try {
           const executionTime = Number(
@@ -120,7 +97,7 @@ console.log("PLAYWRIGHT_BROWSERS_PATH:", process.env.PLAYWRIGHT_BROWSERS_PATH);
           );
 
           // =====================================
-          // Read screenshots
+          // Read Screenshots
           // =====================================
 
           const screenshotsFile = path.join(
@@ -160,6 +137,10 @@ console.log("PLAYWRIGHT_BROWSERS_PATH:", process.env.PLAYWRIGHT_BROWSERS_PATH);
             );
           }
 
+          // =====================================
+          // Save Result
+          // =====================================
+
           const result = await TestResult.create({
             testName: "Search Test",
             status: error ? "FAILED" : "PASSED",
@@ -170,6 +151,10 @@ console.log("PLAYWRIGHT_BROWSERS_PATH:", process.env.PLAYWRIGHT_BROWSERS_PATH);
             screenshots,
             report,
           });
+
+          // =====================================
+          // Response
+          // =====================================
 
           if (error) {
             return res.status(500).json({
@@ -193,6 +178,7 @@ console.log("PLAYWRIGHT_BROWSERS_PATH:", process.env.PLAYWRIGHT_BROWSERS_PATH);
             screenshots,
             result,
           });
+
         } catch (dbError) {
           console.error(dbError);
 
@@ -202,7 +188,8 @@ console.log("PLAYWRIGHT_BROWSERS_PATH:", process.env.PLAYWRIGHT_BROWSERS_PATH);
           });
         }
       }
-    
+    );
+
   } catch (error) {
     console.error(error);
 
