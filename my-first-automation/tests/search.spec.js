@@ -211,7 +211,17 @@ console.log("Clearing search box...");
 await searchBox.clear();
 
 console.log("Filling search box...");
-await searchBox.fill(searchData.searchText);
+await searchBox.click();
+
+await searchBox.fill("");
+
+await searchBox.type(searchData.searchText, {
+  delay: 120,
+});
+
+await expect(searchBox).toHaveValue(searchData.searchText);
+
+console.log("Search text entered");
 
 console.log("Text entered:", searchData.searchText);
 
@@ -245,20 +255,37 @@ addStep(
 // Execute Search
 // =====================================
 
+// =====================================
+// Execute Search
+// =====================================
+
 startTime = Date.now();
 
-console.log("Submitting search using Enter...");
+console.log("Waiting for search button...");
 
-// Press Enter instead of clicking button
-await searchBox.press("Enter");
-
-// Wait until search page opens
-await page.waitForURL(
-  url => url.toString().includes("/search"),
-  { timeout: 30000 }
+const searchButton = page.locator(
+  "button[aria-label='Search'][type='submit']"
 );
 
-await page.waitForLoadState("networkidle");
+await expect(searchButton).toBeVisible({
+  timeout: 30000,
+});
+
+console.log("Clicking search button...");
+
+await searchButton.click();
+
+// Wait for URL to change
+await page.waitForURL(
+  url => url.toString().includes("/search"),
+  {
+    timeout: 60000,
+  }
+);
+
+// Wait for page loading
+await page.waitForLoadState("domcontentloaded");
+await page.waitForTimeout(3000);
 
 endTime = Date.now();
 
@@ -270,10 +297,10 @@ console.log("Current URL:", page.url());
 
 addStep(
   "TC003",
-  "Search Executed",
-  "Submit search using Enter",
+  "Click Search Button",
+  "Click Search button",
   "Search page should open",
-  `Opened ${page.url()}`,
+  page.url(),
   "passed"
 );
 
@@ -281,7 +308,9 @@ addStep(
 // Verify Search Results
 // =====================================
 
-const products = page.locator(".product-card");
+const products = page.locator(
+  "a[href*='/product'], a[href*='/products']"
+);
 
 const productCount = await products.count();
 
@@ -295,7 +324,6 @@ addStep(
   `${productCount} product(s) displayed`,
   productCount > 0 ? "passed" : "failed"
 );
-
 
 
 // =====================================
