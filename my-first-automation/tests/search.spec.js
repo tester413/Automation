@@ -113,43 +113,40 @@ addStep(
     // =====================================
 
     const searchBox = page.locator(
-      "input[placeholder='Search USA products...']"
-    );
+  "input[placeholder='Search USA products...']"
+);
 
-    await expect(searchBox).toBeVisible({
-      timeout: 60000,
-    });
+await expect(searchBox).toBeVisible({
+  timeout: 60000,
+});
 
-    console.log("Search box found");
+console.log("Search box found");
 
-    await searchBox.scrollIntoViewIfNeeded();
+// Wait for page to settle
+await page.waitForTimeout(3000);
 
-    console.log("Clicking search box...");
+console.log("Visible:", await searchBox.isVisible());
+console.log("Enabled:", await searchBox.isEnabled());
+console.log("Editable:", await searchBox.isEditable());
 
-    await searchBox.click({
-      force: true,
-    });
+await expect(searchBox).toBeEditable({
+  timeout: 60000,
+});
 
-    console.log("Clearing search box...");
+console.log("Filling search text...");
 
-    await searchBox.fill("");
+await searchBox.fill(searchData.searchText);
 
-    console.log("Typing search text...");
+console.log("Search text entered:", searchData.searchText);
 
-    await searchBox.type(searchData.searchText, {
-      delay: 100,
-    });
-
-    console.log("Search text entered");
-
-    addStep(
-      "TC002",
-      "Enter Search Text",
-      "Enter keyword",
-      "Keyword should be entered",
-      searchData.searchText,
-      "passed"
-    );
+addStep(
+  "TC002",
+  "Enter Search Text",
+  "Enter keyword",
+  "Keyword should be entered",
+  searchData.searchText,
+  "passed"
+);
 
     // =====================================
     // Search Button
