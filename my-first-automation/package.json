@@ -1,21 +1,16 @@
 {
   "name": "my-first-automation",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "type": "commonjs",
   "scripts": {
     "test": "playwright test",
-    "postinstall": "playwright install chromium"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "devDependencies": {
-    "@playwright/test": "1.61.1",
-    "@types/node": "^26.0.0"
+    "install:browsers": "playwright install chromium"
   },
   "dependencies": {
+    "@playwright/test": "1.61.1",
     "docx": "^9.7.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.0"
   }
 }
