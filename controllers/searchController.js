@@ -3,9 +3,30 @@ const TestResult = require("../models/TestResult");
 const fs = require("fs");
 const path = require("path");
 
+// =====================================
+// Configuration
+// =====================================
+
+const BASE_URL =
+  process.env.BASE_URL || "http://localhost:5000";
+
+const PLAYWRIGHT_ROOT = path.join(
+  process.cwd(),
+  "my-first-automation"
+);
+
+const PLAYWRIGHT_COMMAND =
+  process.platform === "win32"
+    ? "npx playwright test tests/search.spec.js --project=chromium"
+    : "npx playwright test tests/search.spec.js --project=chromium";
+
+// =====================================
+// Run Search Test
+// =====================================
+
 const runSearchTest = async (req, res) => {
   try {
-    console.log("BODY RECEIVED:", req.body);
+    console.log("BODY:", req.body);
 
     const { searchText } = req.body;
 
@@ -16,38 +37,92 @@ const runSearchTest = async (req, res) => {
       });
     }
 
-    // Save test data
-    const dataFilePath = path.join(
-      "C:/Users/CPuser/CCC/my-first-automation",
-      "test-data",
+    // =====================================
+    // Create test-data folder
+    // =====================================
+
+    const testDataDir = path.join(
+      PLAYWRIGHT_ROOT,
+      "test-data"
+    );
+
+    if (!fs.existsSync(testDataDir)) {
+      fs.mkdirSync(testDataDir, {
+        recursive: true,
+      });
+    }
+
+    // =====================================
+    // Save JSON
+    // =====================================
+
+    const dataFile = path.join(
+      testDataDir,
       "searchData.json"
     );
 
     fs.writeFileSync(
-      dataFilePath,
-      JSON.stringify({ searchText }, null, 2)
+      dataFile,
+      JSON.stringify(
+        {
+          searchText,
+        },
+        null,
+        2
+      )
     );
 
-    console.log("SEARCH DATA SAVED");
+    console.log("Search Data Saved:");
+    console.log(dataFile);
 
     const startTime = Date.now();
 
     exec(
-      "npx playwright test tests/search.spec.js --project=chromium",
+      PLAYWRIGHT_COMMAND,
       {
-        cwd: "C:/Users/CPuser/CCC/my-first-automation",
+        cwd: PLAYWRIGHT_ROOT,
+        maxBuffer: 1024 * 1024 * 20,
       },
       async (error, stdout, stderr) => {
         try {
+          const executionTime = Number(
+            ((Date.now() - startTime) / 1000).toFixed(2)
+          );
 
-          // ⭐ NEW - Read Playwright JSON Report
+          // =====================================
+          // Read screenshots
+          // =====================================
+
+          const screenshotsFile = path.join(
+            PLAYWRIGHT_ROOT,
+            "screenshots",
+            "screenshots.json"
+          );
+
+          let screenshots = [];
+
+          if (fs.existsSync(screenshotsFile)) {
+            const files = JSON.parse(
+              fs.readFileSync(screenshotsFile, "utf8")
+            );
+
+            screenshots = files.map(
+              (file) =>
+                `${BASE_URL}/screenshots/${encodeURIComponent(file)}`
+            );
+          }
+
+          // =====================================
+          // Read Report
+          // =====================================
+
+          let report = null;
+
           const reportPath = path.join(
-            "C:/Users/CPuser/CCC/my-first-automation",
+            PLAYWRIGHT_ROOT,
             "reports",
             "report.json"
           );
-
-          let report = null;
 
           if (fs.existsSync(reportPath)) {
             report = JSON.parse(
@@ -55,78 +130,41 @@ const runSearchTest = async (req, res) => {
             );
           }
 
-          console.log("========== PLAYWRIGHT REPORT ==========");
-          console.log(JSON.stringify(report, null, 2));
-
-          const executionTime = Number(
-            ((Date.now() - startTime) / 1000).toFixed(2)
-          );
-
-          console.log("========== PLAYWRIGHT STDOUT ==========");
-          console.log(stdout);
-
-          console.log("========== PLAYWRIGHT STDERR ==========");
-          console.log(stderr);
-
-          let screenshot = null;
-
-          // Match screenshot filename
-          const match = stdout.match(/SCREENSHOT_NAME=(.+\.png)/);
-
-          console.log("MATCH =>", match);
-
-          if (match && match[1]) {
-            screenshot = `http://localhost:5000/screenshots/${match[1].trim()}`;
-          }
-
-          console.log("SCREENSHOT URL =>", screenshot);
-
-          // ⭐ NEW - Use report title if available
-          const testName =
-            report?.tests?.[0]?.title || "Search Test";
-
-          const resultData = {
-            testName,
+          const result = await TestResult.create({
+            testName: "Search Test",
             status: error ? "FAILED" : "PASSED",
-            output: error ? (stderr || stdout) : stdout,
+            output: error
+              ? stderr || stdout || error.message
+              : stdout,
             executionTime,
-            screenshots: screenshot ? [screenshot] : [],
-
-            // ⭐ Save full report
-            report
-          };
-
-          console.log("========== DATA TO SAVE ==========");
-          console.log(JSON.stringify(resultData, null, 2));
-
-          const savedResult = await TestResult.create(resultData);
-
-          console.log("========== SAVED RESULT ==========");
-          console.log(savedResult);
+            screenshots,
+            report,
+          });
 
           if (error) {
             return res.status(500).json({
               success: false,
               message: "Search Test Failed",
+              searchText,
+              executionTime,
               stdout,
               stderr,
-              screenshot,
-              result: savedResult,
+              screenshots,
+              result,
             });
           }
 
           return res.status(200).json({
             success: true,
             message: "Search Test Passed",
+            searchText,
             executionTime,
-            screenshot,
             stdout,
-            report, // ⭐ Return report to frontend
-            result: savedResult,
+            screenshots,
+            result,
           });
-
         } catch (dbError) {
-          console.error("DATABASE ERROR:", dbError);
+          console.error(dbError);
 
           return res.status(500).json({
             success: false,
@@ -135,7 +173,6 @@ const runSearchTest = async (req, res) => {
         }
       }
     );
-
   } catch (error) {
     console.error(error);
 
@@ -146,9 +183,17 @@ const runSearchTest = async (req, res) => {
   }
 };
 
+// =====================================
+// Get Results
+// =====================================
+
 const getAllResults = async (req, res) => {
   try {
-    const results = await TestResult.find().sort({ executedAt: -1 });
+    const results = await TestResult.find({
+      testName: "Search Test",
+    }).sort({
+      executedAt: -1,
+    });
 
     return res.status(200).json({
       success: true,

@@ -3,13 +3,26 @@ const TestResult = require("../models/TestResult");
 const fs = require("fs");
 const path = require("path");
 
+// =========================
+// Base URL
+// =========================
 const BASE_URL =
-  process.env.BASE_URL || "https://automation-backend-r22h.onrender.com";
+  process.env.BASE_URL ||
+  `http://localhost:${process.env.PORT || 5000}`;
 
 const PROJECT_ROOT = process.cwd();
 
-// Playwright project location
-const PLAYWRIGHT_ROOT = path.join(PROJECT_ROOT, "my-first-automation");
+// Playwright project folder
+const PLAYWRIGHT_ROOT = path.join(
+  PROJECT_ROOT,
+  "my-first-automation"
+);
+
+// Windows / Linux command
+const PLAYWRIGHT_COMMAND =
+  process.platform === "win32"
+    ? "npx playwright test tests/news.spec.js --reporter=line"
+    : "./node_modules/.bin/playwright test tests/news.spec.js --reporter=line";
 
 const runNewsTest = async (req, res) => {
   try {
@@ -24,15 +37,25 @@ const runNewsTest = async (req, res) => {
       });
     }
 
-    // ================= SAVE TEST DATA =================
+    // =========================
+    // Save Test Data
+    // =========================
 
-   const dataDir = path.join(PLAYWRIGHT_ROOT, "test-data");
+    const dataDir = path.join(
+      PLAYWRIGHT_ROOT,
+      "test-data"
+    );
 
     if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
+      fs.mkdirSync(dataDir, {
+        recursive: true,
+      });
     }
 
-    const dataFilePath = path.join(dataDir, "newsData.json");
+    const dataFilePath = path.join(
+      dataDir,
+      "newsData.json"
+    );
 
     fs.writeFileSync(
       dataFilePath,
@@ -41,32 +64,60 @@ const runNewsTest = async (req, res) => {
 
     console.log("NEWS DATA SAVED:", dataFilePath);
 
+    console.log("PLAYWRIGHT_ROOT:", PLAYWRIGHT_ROOT);
+
+    console.log(
+      "Config exists:",
+      fs.existsSync(
+        path.join(
+          PLAYWRIGHT_ROOT,
+          "playwright.config.js"
+        )
+      )
+    );
+
+    console.log(
+      "Test exists:",
+      fs.existsSync(
+        path.join(
+          PLAYWRIGHT_ROOT,
+          "tests",
+          "news.spec.js"
+        )
+      )
+    );
+
+    console.log(
+      "Auth exists:",
+      fs.existsSync(
+        path.join(
+          PLAYWRIGHT_ROOT,
+          "auth",
+          "auth.json"
+        )
+      )
+    );
+
     const startTime = Date.now();
 
-    console.log("PLAYWRIGHT_ROOT:", PLAYWRIGHT_ROOT);
-console.log(
-  "Config exists:",
-  fs.existsSync(path.join(PLAYWRIGHT_ROOT, "playwright.config.js"))
-);
-console.log(
-  "News test exists:",
-  fs.existsSync(path.join(PLAYWRIGHT_ROOT, "tests", "news.spec.js"))
-);
-
     exec(
-        "./node_modules/.bin/playwright test tests/news.spec.js --reporter=line",
+      PLAYWRIGHT_COMMAND,
       {
-       cwd: PLAYWRIGHT_ROOT,
-       maxBuffer: 1024 * 1024 * 20,
+        cwd: PLAYWRIGHT_ROOT,
+        maxBuffer: 1024 * 1024 * 20,
       },
       async (error, stdout, stderr) => {
         try {
           const executionTime = Number(
-            ((Date.now() - startTime) / 1000).toFixed(2)
+            (
+              (Date.now() - startTime) /
+              1000
+            ).toFixed(2)
           );
 
-          console.log(stdout);
-    console.log(stderr);
+          // =========================
+          // Read screenshots.json
+          // =========================
 
           const screenshotsJson = path.join(
             PLAYWRIGHT_ROOT,
@@ -78,11 +129,40 @@ console.log(
 
           if (fs.existsSync(screenshotsJson)) {
             const files = JSON.parse(
-              fs.readFileSync(screenshotsJson, "utf8")
+              fs.readFileSync(
+                screenshotsJson,
+                "utf8"
+              )
             );
 
-            screenshots = files.map(file =>
-              `${BASE_URL}/screenshots/${encodeURIComponent(file)}`
+            screenshots = files.map(
+              (file) =>
+                `${BASE_URL}/screenshots/${encodeURIComponent(
+                  file
+                )}`
+            );
+          }
+
+          console.log("Screenshots:", screenshots);
+
+          // =========================
+          // Read report.json
+          // =========================
+
+          let report = null;
+
+          const reportPath = path.join(
+            PLAYWRIGHT_ROOT,
+            "reports",
+            "report.json"
+          );
+
+          if (fs.existsSync(reportPath)) {
+            report = JSON.parse(
+              fs.readFileSync(
+                reportPath,
+                "utf8"
+              )
             );
           }
 
@@ -90,17 +170,22 @@ console.log(
             testName: "Newsletter Test",
             status: error ? "FAILED" : "PASSED",
             output: error
-              ? (stderr || stdout || error.message)
+              ? stderr || stdout || error.message
               : stdout,
             executionTime,
             screenshots,
+            report,
           };
 
-          const savedResult = await TestResult.create(resultData);
+          const savedResult =
+            await TestResult.create(resultData);
 
-           console.log("ERROR:", error);
-console.log("STDOUT:", stdout);
-console.log("STDERR:", stderr);
+          console.log("========== PLAYWRIGHT ==========");
+          console.log("ERROR:", error);
+          console.log("STDOUT:\n", stdout);
+          console.log("STDERR:\n", stderr);
+          console.log("===============================");
+
           if (error) {
             return res.status(500).json({
               success: false,
@@ -123,7 +208,6 @@ console.log("STDERR:", stderr);
             stdout,
             result: savedResult,
           });
-
         } catch (dbError) {
           console.error("DATABASE ERROR:", dbError);
 
@@ -134,7 +218,6 @@ console.log("STDERR:", stderr);
         }
       }
     );
-
   } catch (error) {
     console.error(error);
 
@@ -158,7 +241,6 @@ const getNewsResults = async (req, res) => {
       count: results.length,
       results,
     });
-
   } catch (error) {
     return res.status(500).json({
       success: false,

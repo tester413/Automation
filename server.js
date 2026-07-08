@@ -1,8 +1,6 @@
-const dotenv = require("dotenv");
-dotenv.config();
+require("dotenv").config();
 
 const express = require("express");
-const https = require("https");
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
@@ -11,32 +9,39 @@ const listEndpoints = require("express-list-endpoints");
 
 const app = express();
 
-
-
-// =====================
+// ==========================
 // DATABASE
-// =====================
+// ==========================
 connectDB();
 
-// =====================
+// ==========================
 // MIDDLEWARE
-// =====================
-app.use(cors());
+// ==========================
+app.use(
+  cors({
+    origin: "*", // Change to your frontend URL after deployment
+    methods: ["GET", "POST"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
-// Request Logger
+// ==========================
+// REQUEST LOGGER
+// ==========================
 app.use((req, res, next) => {
-    console.log(`${req.method} ${req.originalUrl}`);
-    next();
+  console.log(`${req.method} ${req.originalUrl}`);
+  next();
 });
 
-// =====================
-// SCREENSHOT SERVING
-// =====================
+// ==========================
+// SCREENSHOTS
+// ==========================
 const screenshotsPath = path.join(
-    process.cwd(),
-    "my-first-automation",
-    "screenshots"
+  __dirname,
+  "my-first-automation",
+  "screenshots"
 );
 
 console.log("📸 Serving screenshots from:");
@@ -45,84 +50,59 @@ console.log(screenshotsPath);
 console.log("Folder Exists:", fs.existsSync(screenshotsPath));
 
 if (fs.existsSync(screenshotsPath)) {
-    console.log("📂 Screenshot Files:");
-    console.log(fs.readdirSync(screenshotsPath));
+  console.log("Files:", fs.readdirSync(screenshotsPath));
 }
 
 app.use("/screenshots", express.static(screenshotsPath));
 
-// Test Route (Remove later if you want)
-app.get("/test-image", (req, res) => {
-    const imagePath = path.join(screenshotsPath, "8-save-visible.png");
-
-    if (fs.existsSync(imagePath)) {
-        return res.sendFile(imagePath);
-    }
-
-    res.status(404).json({
-        success: false,
-        message: "Image not found"
-    });
-});
-
-// =====================
+// ==========================
 // ROUTES
-// =====================
-const testRoutes = require("./routes/testRoutes");
-const searchRoutes = require("./routes/searchRoutes");
-const supportRoutes = require("./routes/supportRoutes");
-const newsRoutes = require("./routes/newsRoutes");
-const testResultRoutes = require("./routes/allRoutes");
-
-let reportRoutes;
+// ==========================
+app.use("/api", require("./routes/testRoutes"));
+app.use("/api/search", require("./routes/searchRoutes"));
+app.use("/api/support", require("./routes/supportRoutes"));
+app.use("/api/news", require("./routes/newsRoutes"));
+app.use("/api", require("./routes/allRoutes"));
 
 try {
-    reportRoutes = require("./routes/reportRoutes");
-    console.log("✅ reportRoutes imported successfully");
+  app.use("/api/report", require("./routes/reportRoutes"));
+  console.log("✅ reportRoutes loaded");
 } catch (err) {
-    console.error("❌ Error importing reportRoutes");
-    console.error(err);
+  console.log("❌ reportRoutes not found");
 }
 
-app.use("/api", testRoutes);
-app.use("/api/search", searchRoutes);
-app.use("/api/support", supportRoutes);
-app.use("/api/news", newsRoutes);
-app.use("/api", testResultRoutes);
-
-if (reportRoutes) {
-    app.use("/api/report", reportRoutes);
-}
-
-// =====================
+// ==========================
 // ROOT
-// =====================
+// ==========================
 app.get("/", (req, res) => {
-    res.send("Backend Running Successfully");
+  res.json({
+    success: true,
+    message: "Automation Backend Running",
+  });
 });
 
-// =====================
-// PRINT ROUTES
-// =====================
+// ==========================
+// SHOW ALL ROUTES
+// ==========================
 console.log("\n========== REGISTERED ROUTES ==========");
 console.log(listEndpoints(app));
 console.log("=======================================\n");
 
-// =====================
-// 404 HANDLER
-// =====================
+// ==========================
+// 404
+// ==========================
 app.use((req, res) => {
-    res.status(404).json({
-        success: false,
-        message: `Route not found: ${req.method} ${req.originalUrl}`
-    });
+  res.status(404).json({
+    success: false,
+    message: `${req.method} ${req.originalUrl} not found`,
+  });
 });
 
-// =====================
+// ==========================
 // START SERVER
-// =====================
+// ==========================
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });

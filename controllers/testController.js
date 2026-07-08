@@ -3,15 +3,33 @@ const TestResult = require("../models/TestResult");
 const fs = require("fs");
 const path = require("path");
 
+// =============================
+// Configuration
+// =============================
+const BASE_URL =
+  process.env.BASE_URL ||
+  `http://localhost:${process.env.PORT || 5000}`;
+
+const PLAYWRIGHT_ROOT = path.join(
+  process.cwd(),
+  "my-first-automation"
+);
+
+// Windows / Linux command
+const PLAYWRIGHT_COMMAND =
+  process.platform === "win32"
+    ? "npx playwright test tests/profile.spec.js --project=chromium"
+    : "npx playwright test tests/profile.spec.js --project=chromium";
+
+// =============================
+// Run Profile Test
+// =============================
 const runProfileTest = async (req, res) => {
   try {
     console.log("BODY RECEIVED:", req.body);
 
     const { name, phone, dob } = req.body;
 
-    // ==========================
-    // Validation
-    // ==========================
     if (!name || !phone || !dob) {
       return res.status(400).json({
         success: false,
@@ -19,138 +37,194 @@ const runProfileTest = async (req, res) => {
       });
     }
 
-    // ==========================
-    // Update Playwright Test Data
-    // ==========================
+    // =============================
+    // Save Test Data
+    // =============================
+    const dataDir = path.join(
+      PLAYWRIGHT_ROOT,
+      "test-data"
+    );
+
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, {
+        recursive: true,
+      });
+    }
+
     const dataFilePath = path.join(
-      "C:/Users/CPuser/CCC/my-first-automation",
-      "test-data",
+      dataDir,
       "profileData.json"
     );
 
     fs.writeFileSync(
       dataFilePath,
-      JSON.stringify({ name, phone, dob }, null, 2)
+      JSON.stringify(
+        {
+          name,
+          phone,
+          dob,
+        },
+        null,
+        2
+      )
     );
 
-    console.log("TEST DATA SAVED");
-
-    // ==========================
-    // Screenshot Folder
-    // ==========================
-    const screenshotsDir = path.join(
-      "C:/Users/CPuser/CCC/my-first-automation",
-      "screenshots"
-    );
-
-    // Remove old screenshots before running
-    if (fs.existsSync(screenshotsDir)) {
-      fs.readdirSync(screenshotsDir).forEach((file) => {
-        if (file.endsWith(".png")) {
-          fs.unlinkSync(path.join(screenshotsDir, file));
-        }
-      });
-    }
+    console.log("PROFILE DATA SAVED");
 
     const startTime = Date.now();
 
     exec(
-      "npx playwright test tests/profile.spec.js --project=chromium",
+      PLAYWRIGHT_COMMAND,
       {
-        cwd: "C:/Users/CPuser/CCC/my-first-automation",
+        cwd: PLAYWRIGHT_ROOT,
+        maxBuffer: 1024 * 1024 * 20,
       },
       async (error, stdout, stderr) => {
-        const executionTime = Number(
-          ((Date.now() - startTime) / 1000).toFixed(2)
-        );
-
         try {
-          // ==========================
-          // Read Screenshots
-          // ==========================
-         // ==========================
-// Read screenshots.json
-// ==========================
-const screenshotsJsonPath = path.join(
-  screenshotsDir,
-  "screenshots.json"
-);
+          const executionTime = Number(
+            ((Date.now() - startTime) / 1000).toFixed(2)
+          );
 
-let screenshots = [];
+          // =============================
+          // Read screenshots.json
+          // =============================
+          const screenshotsJson = path.join(
+            PLAYWRIGHT_ROOT,
+            "screenshots",
+            "screenshots.json"
+          );
 
-if (fs.existsSync(screenshotsJsonPath)) {
-  const files = JSON.parse(
-    fs.readFileSync(screenshotsJsonPath, "utf8")
-  );
+          let screenshots = [];
 
-  screenshots = files.map(
-    (file) =>
-      `http://localhost:5000/screenshots/${encodeURIComponent(file)}`
-  );
-}
+          if (fs.existsSync(screenshotsJson)) {
+            const files = JSON.parse(
+              fs.readFileSync(
+                screenshotsJson,
+                "utf8"
+              )
+            );
 
-console.log("Screenshots Found:", screenshots);
-
-          // ==========================
-          // FAILED
-          // ==========================
-          if (error) {
-            const failedResult = await TestResult.create({
-              testName: "Profile Update Test",
-              status: "FAILED",
-              output: stderr || stdout || error.message,
-              executionTime,
-              screenshots,
-            });
-
-            return res.status(500).json({
-              success: false,
-              message: "Profile test failed",
-              error: error.message,
-              stdout,
-              stderr,
-              result: failedResult,
-            });
+            screenshots = files.map(
+              (file) =>
+                `${BASE_URL}/screenshots/${encodeURIComponent(file)}`
+            );
           }
 
-          // ==========================
-          // PASSED
-          // ==========================
+          // =============================
           // Read report.json
-const reportPath = path.join(
-  "C:/Users/CPuser/CCC/my-first-automation",
+          // =============================
+
+          // =============================
+// Read steps.json
+// =============================
+
+let steps = [];
+
+const stepsPath = path.join(
+  PLAYWRIGHT_ROOT,
   "reports",
-  "report.json"
+  "steps.json"
 );
 
-let report = null;
 
-if (fs.existsSync(reportPath)) {
-    report = JSON.parse(
-        fs.readFileSync(reportPath, "utf8")
-    );
+if (fs.existsSync(stepsPath)) {
+
+  steps = JSON.parse(
+    fs.readFileSync(
+      stepsPath,
+      "utf8"
+    )
+  );
+
 }
+          let report = null;
 
-const passedResult = await TestResult.create({
+          const reportPath = path.join(
+            PLAYWRIGHT_ROOT,
+            "reports",
+            "report.json"
+          );
+
+          if (fs.existsSync(reportPath)) {
+            report = JSON.parse(
+              fs.readFileSync(
+                reportPath,
+                "utf8"
+              )
+            );
+          }
+
+          // =============================
+          // Save Result
+          // =============================
+          const resultData = {
+
     testName: "Profile Update Test",
-    status: "PASSED",
-    output: stdout,
-    executionTime,
-    screenshots,
-    report
-});
 
-          return res.status(200).json({
-            success: true,
-            message: "Profile test executed successfully",
-            testData: {
+    status: error 
+      ? "FAILED" 
+      : "PASSED",
+
+
+    testData:{
+      name,
+      phone,
+      dob
+    },
+
+
+    steps,   // 👈 Add this
+
+
+    output: error
+      ? stderr || stdout || error.message
+      : stdout,
+
+
+    executionTime,
+
+    screenshots,
+
+    report,
+
+};
+
+          const savedResult =
+            await TestResult.create(resultData);
+
+          console.log("========== PROFILE TEST ==========");
+          console.log("ERROR:", error);
+          console.log("STDOUT:", stdout);
+          console.log("STDERR:", stderr);
+          console.log("==================================");
+
+          if (error) {
+            return res.status(500).json({
+              success: false,
+              message: "Profile Test Failed",
               name,
               phone,
               dob,
-            },
+              executionTime,
+              screenshots,
+              stdout,
+              stderr,
+              result: savedResult,
+            });
+          }
+
+          return res.status(200).json({
+            success: true,
+            message: "Profile Test Passed",
+            name,
+            phone,
+            dob,
+            executionTime,
+            screenshots,
             stdout,
-            result: passedResult,
+            result: savedResult,
           });
+
         } catch (dbError) {
           console.error(dbError);
 
@@ -161,6 +235,7 @@ const passedResult = await TestResult.create({
         }
       }
     );
+
   } catch (error) {
     console.error(error);
 
@@ -171,9 +246,14 @@ const passedResult = await TestResult.create({
   }
 };
 
+// =============================
+// Get All Results
+// =============================
 const getAllResults = async (req, res) => {
   try {
-    const results = await TestResult.find().sort({
+    const results = await TestResult.find({
+      testName: "Profile Update Test",
+    }).sort({
       executedAt: -1,
     });
 
@@ -182,6 +262,7 @@ const getAllResults = async (req, res) => {
       count: results.length,
       results,
     });
+
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -190,6 +271,9 @@ const getAllResults = async (req, res) => {
   }
 };
 
+// =============================
+// Export
+// =============================
 module.exports = {
   runProfileTest,
   getAllResults,

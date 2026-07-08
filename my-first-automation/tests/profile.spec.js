@@ -257,16 +257,58 @@ test("Profile Update Flow - Pass Only On Success Message", async ({ page }) => {
 
     throw err;
   } finally {
+
     // =========================
     // Save Screenshot List
     // =========================
+
     fs.writeFileSync(
-      path.join(screenshotsDir, "screenshots.json"),
-      JSON.stringify(screenshots, null, 2)
+      path.join(
+        screenshotsDir,
+        "screenshots.json"
+      ),
+      JSON.stringify(
+        screenshots,
+        null,
+        2
+      )
     );
 
+
+    // =========================
+    // Save Step Report
+    // =========================
+
+    const reportDir = path.join(
+      process.cwd(),
+      "reports"
+    );
+
+
+    if(!fs.existsSync(reportDir)){
+      fs.mkdirSync(reportDir,{
+        recursive:true
+      });
+    }
+
+
+    fs.writeFileSync(
+      path.join(
+        reportDir,
+        "steps.json"
+      ),
+      JSON.stringify(
+        stepReport,
+        null,
+        2
+      )
+    );
+
+
     console.log("📸 Screenshot list saved.");
-  }
+    console.log("📋 Step report saved.");
+
+}
 
 addStep(
   9,

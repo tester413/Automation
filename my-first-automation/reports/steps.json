@@ -1,0 +1,66 @@
+[
+  {
+    "step": 1,
+    "action": "Open Website",
+    "expected": "Homepage should load",
+    "actual": "Homepage loaded successfully",
+    "status": "PASSED",
+    "screenshot": "1-open-website.png"
+  },
+  {
+    "step": 2,
+    "action": "Click Manage Orders",
+    "expected": "Manage Orders menu should open",
+    "actual": "Manage Orders menu opened successfully",
+    "status": "PASSED",
+    "screenshot": "2-manage-orders.png"
+  },
+  {
+    "step": 3,
+    "action": "Open Profile",
+    "expected": "Profile page should open",
+    "actual": "Profile page opened successfully",
+    "status": "PASSED",
+    "screenshot": "3-profile-page.png"
+  },
+  {
+    "step": 4,
+    "action": "Click Edit Profile",
+    "expected": "Edit Profile form should appear",
+    "actual": "Edit Profile form displayed",
+    "status": "PASSED",
+    "screenshot": "4-edit-profile.png"
+  },
+  {
+    "step": 5,
+    "action": "Update Name",
+    "expected": "Name should be updated",
+    "actual": "Name updated to Tester CPIPL",
+    "status": "PASSED",
+    "screenshot": "5-name-updated.png"
+  },
+  {
+    "step": 6,
+    "action": "Update Phone",
+    "expected": "Phone should be updated",
+    "actual": "Phone updated to 8850303767",
+    "status": "PASSED",
+    "screenshot": "6-phone-updated.png"
+  },
+  {
+    "step": 7,
+    "action": "Update DOB",
+    "expected": "DOB should be updated",
+    "actual": "DOB updated to 2026-07-01",
+    "status": "PASSED",
+    "screenshot": "7-dob-updated.png"
+  },
+  {
+    "step": 8,
+    "action": "Click Save",
+    "expected": "Profile should be saved",
+    "actual": "Save button clicked successfully",
+    "status": "PASSED",
+    "screenshot": "8-save-clicked.png"
+  }
+]
