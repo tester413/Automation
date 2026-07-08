@@ -146,6 +146,13 @@ console.log("TITLE:", await page.title());
 console.log("URL:", page.url());
 
 await page.screenshot({
+  path: "render-homepage.png",
+  fullPage: true,
+});
+
+console.log(await page.content());
+
+await page.screenshot({
   path: path.join(process.cwd(), "screenshots", "render-home.png"),
   fullPage: true,
 });
@@ -199,9 +206,15 @@ if (await acceptButton.isVisible().catch(() => false)) {
   console.log("Cookie banner found");
   await acceptButton.click();
 }
-const searchBox =
-page.locator(
-"input[placeholder='Search USA products...']"
+const allInputs = await page.locator("input").count();
+
+console.log("TOTAL INPUTS:", allInputs);
+
+const searchBox = page.locator("input[type='search']").first();
+
+console.log(
+  "Search locator count:",
+  await searchBox.count()
 );
 
 
