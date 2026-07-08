@@ -79,10 +79,15 @@ const runSearchTest = async (req, res) => {
 
     exec(
       PLAYWRIGHT_COMMAND,
-      {
-        cwd: PLAYWRIGHT_ROOT,
-        maxBuffer: 1024 * 1024 * 20,
-      },
+     exec(PLAYWRIGHT_COMMAND, {
+  cwd: PLAYWRIGHT_ROOT,
+  maxBuffer: 1024 * 1024 * 20,
+  env: {
+    ...process.env,
+    PLAYWRIGHT_BROWSERS_PATH: "0",
+  },
+}, callback),
+  
       async (error, stdout, stderr) => {
         try {
           const executionTime = Number(
