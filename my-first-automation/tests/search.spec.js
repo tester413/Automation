@@ -296,8 +296,15 @@ addStep(
 startTime = Date.now();
 
 
+console.log("Clicking search button...");
 
 await searchButton.click();
+
+console.log("Search button clicked");
+
+await page.waitForTimeout(5000);
+
+console.log("Current URL:", page.url());
 
 
 
