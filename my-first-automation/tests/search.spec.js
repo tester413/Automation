@@ -204,17 +204,16 @@ console.log(
 );
 
 
+console.log("Clicking search box...");
+await searchBox.click();
 
-await searchBox.fill(
-searchData.searchText
-);
+console.log("Clearing search box...");
+await searchBox.clear();
 
+console.log("Filling search box...");
+await searchBox.fill(searchData.searchText);
 
-
-console.log(
-"Text entered:",
-searchData.searchText
-);
+console.log("Text entered:", searchData.searchText);
 
 
 
