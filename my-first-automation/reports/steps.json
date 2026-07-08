@@ -35,7 +35,7 @@
     "step": 5,
     "action": "Update Name",
     "expected": "Name should be updated",
-    "actual": "Name updated to Tester CPIPL",
+    "actual": "Name updated to Shubhansh",
     "status": "PASSED",
     "screenshot": "5-name-updated.png"
   },
@@ -51,7 +51,7 @@
     "step": 7,
     "action": "Update DOB",
     "expected": "DOB should be updated",
-    "actual": "DOB updated to 2026-07-01",
+    "actual": "DOB updated to 2026-06-30",
     "status": "PASSED",
     "screenshot": "7-dob-updated.png"
   },

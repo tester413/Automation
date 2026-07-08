@@ -242,125 +242,59 @@ addStep(
 
 
 
-console.log(
-"Waiting for search button..."
-);
-
-
-
-const searchButton =
-page.locator(
-"button[aria-label='Search'][type='submit']"
-);
-
-
-
-await expect(searchButton)
-.toBeVisible({
-
-timeout:30000
-
-});
-
-
-
-console.log(
-"Button found"
-);
-
-
-
-addStep(
-
-"TC003",
-
-"Search Button",
-
-"Verify search button",
-
-"Button should be visible",
-
-"Button visible",
-
-"passed"
-
-);
-
-
-
 // =====================================
-// Click Search
+// Execute Search
 // =====================================
-
 
 startTime = Date.now();
 
+console.log("Submitting search using Enter...");
 
-console.log("Clicking search button...");
+// Press Enter instead of clicking button
+await searchBox.press("Enter");
 
-await searchButton.click();
-
-console.log("Search button clicked");
-
-await page.waitForTimeout(5000);
-
-console.log("Current URL:", page.url());
-
-
-
-console.log(
-"Search clicked"
-);
-
-
-
-// wait for URL change
-
+// Wait until search page opens
 await page.waitForURL(
-
-url => url.toString().includes("/search"),
-
-{
-
-timeout:60000
-
-}
-
+  url => url.toString().includes("/search"),
+  { timeout: 30000 }
 );
 
-
+await page.waitForLoadState("networkidle");
 
 endTime = Date.now();
 
-
-
 console.log(
-`🔍 Search Result Load Time: ${endTime-startTime} ms`
+  `🔍 Search Results Load Time: ${endTime - startTime} ms`
 );
 
-
-
-console.log(
-"Current URL:",
-page.url()
-);
-
-
+console.log("Current URL:", page.url());
 
 addStep(
+  "TC003",
+  "Search Executed",
+  "Submit search using Enter",
+  "Search page should open",
+  `Opened ${page.url()}`,
+  "passed"
+);
 
-"TC004",
+// =====================================
+// Verify Search Results
+// =====================================
 
-"Search Executed",
+const products = page.locator(".product-card");
 
-"Click search button",
+const productCount = await products.count();
 
-"Search page should open",
+console.log("Products Found:", productCount);
 
-`Opened ${page.url()}`,
-
-"passed"
-
+addStep(
+  "TC004",
+  "Verify Search Results",
+  "Verify products are displayed",
+  "Products should be displayed",
+  `${productCount} product(s) displayed`,
+  productCount > 0 ? "passed" : "failed"
 );
 
 
