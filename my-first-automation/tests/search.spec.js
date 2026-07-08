@@ -135,9 +135,17 @@ await expect(searchBox).toBeEditable({
 
 console.log("Filling search text...");
 
-await searchBox.fill(searchData.searchText);
+console.log("Before fill");
 
-console.log("Search text entered:", searchData.searchText);
+await searchBox.click();
+
+await searchBox.press("Control+A");
+
+await searchBox.press("Backspace");
+
+await searchBox.pressSequentially(searchData.searchText);
+
+console.log("After fill");
 
 addStep(
   "TC002",
