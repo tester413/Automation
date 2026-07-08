@@ -77,16 +77,23 @@ const runSearchTest = async (req, res) => {
 
     const startTime = Date.now();
 
-    exec(
-      PLAYWRIGHT_COMMAND,
-     exec(PLAYWRIGHT_COMMAND, {
-  cwd: PLAYWRIGHT_ROOT,
-  maxBuffer: 1024 * 1024 * 20,
-  env: {
-    ...process.env,
-    PLAYWRIGHT_BROWSERS_PATH: "0",
+    console.log("PLAYWRIGHT_ROOT:", PLAYWRIGHT_ROOT);
+console.log("PLAYWRIGHT_BROWSERS_PATH:", process.env.PLAYWRIGHT_BROWSERS_PATH);
+
+   exec(
+  PLAYWRIGHT_COMMAND,
+  {
+    cwd: PLAYWRIGHT_ROOT,
+    maxBuffer: 1024 * 1024 * 20,
+    env: {
+      ...process.env,
+      PLAYWRIGHT_BROWSERS_PATH: "0",
+    },
   },
-}, callback),
+  async (error, stdout, stderr) => {
+    // your existing code
+  }
+);
   
       async (error, stdout, stderr) => {
         try {
